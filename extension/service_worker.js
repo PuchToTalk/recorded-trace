@@ -11,9 +11,14 @@ chrome.storage.local.get(["recording", "buffer"]).then(({ recording: storedRecor
   }
 });
 
-chrome.runtime.onMessage.addListener((msg) => {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.kind === "STEP_ADD" && recording) {
     buffer.steps.push(msg.step);
+    console.log("Step added:", msg.step, "Total steps:", buffer.steps.length);
+  }
+
+  if (msg.kind === "GET_RECORDING_STATE") {
+    sendResponse({ recording });
   }
 
   if (msg.kind === "REC_START") {
@@ -24,11 +29,25 @@ chrome.runtime.onMessage.addListener((msg) => {
       steps: []
     };
     chrome.storage.local.set({ recording: true, buffer });
+    
+    // Broadcast recording state to all content scripts
+    chrome.tabs.query({}, (tabs) => {
+      tabs.forEach(tab => {
+        chrome.tabs.sendMessage(tab.id, { kind: "RECORDING_STATE", recording: true }).catch(() => {});
+      });
+    });
   }
 
   if (msg.kind === "REC_STOP") {
     recording = false;
     chrome.storage.local.set({ recording: false, buffer });
+    
+    // Broadcast recording state to all content scripts
+    chrome.tabs.query({}, (tabs) => {
+      tabs.forEach(tab => {
+        chrome.tabs.sendMessage(tab.id, { kind: "RECORDING_STATE", recording: false }).catch(() => {});
+      });
+    });
   }
 
   if (msg.kind === "REC_CLEAR") {
