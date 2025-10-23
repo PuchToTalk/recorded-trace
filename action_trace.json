@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+  "meta": { "recordedAt": "2025-10-23T08:00:00Z" },
+  "steps": [
+    { "type": "navigate", "url": "https://chatgpt.com", "timestamp": 1 },
+    { "type": "wait", "ms": 1500, "timestamp": 2 },
+
+    { "type": "click", "selector": "textarea[aria-label='Message']", "timestamp": 3 },
+    { "type": "input", "selector": "textarea[aria-label='Message']", "value": "Hello! What can you do?", "replace": true, "timestamp": 4 },
+    { "type": "click", "selector": "button[data-testid='send-button']", "timestamp": 5 },
+    { "type": "waitForSelector", "selector": "[data-testid='message-wrapper']", "timeout": 30000, "timestamp": 6 },
+
+    { "type": "click", "selector": "textarea[aria-label='Message']", "timestamp": 7 },
+    { "type": "input", "selector": "textarea[aria-label='Message']", "value": "Write a short haiku about coffee.", "replace": true, "timestamp": 8 },
+    { "type": "keyPress", "key": "Enter", "timestamp": 9 },
+    { "type": "waitForSelector", "selector": "[data-testid='message-wrapper']", "timeout": 30000, "timestamp": 10 },
+
+    { "type": "click", "selector": "[aria-label='Search']", "timestamp": 11 },
+    { "type": "input", "selector": "input[placeholder*='Search']", "value": "best cafés near the Panthéon", "replace": true, "timestamp": 12 },
+    { "type": "keyPress", "key": "Enter", "timestamp": 13 },
+    { "type": "wait", "ms": 1000, "timestamp": 14 },
+    { "type": "scroll", "x": 0, "y": 600, "timestamp": 15 }
+  ]
+}

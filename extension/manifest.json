@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Altera Action Recorder",
+  "version": "1.0.0",
+  "description": "Record user actions (navigate, click, input, scroll, keyPress) and download as JSON.",
+  "permissions": ["scripting", "activeTab", "downloads", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "background": { "service_worker": "service_worker.js" },
+  "action": { "default_popup": "popup.html" },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["selector.js", "content.js"],
+      "run_at": "document_start"
+    }
+  ]
+}
