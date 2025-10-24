@@ -71,3 +71,11 @@ Note: ChatGPT's DOM may change; selectors are written to be robust, but you may 
 }
 ```
 
+---
+
+## Implementation Tradeoffs
+
+This implementation uses HTML selectors (similar to Chrome DevTools Recorder) rather than multimodal models or OCR approaches. HTML selectors provide precise element targeting with CSS selectors, offering lightweight performance without AI model inference requirements, and work reliably across different websites with simple, debuggable logic. The tradeoff is that selectors may break when websites update their HTML structure, and the approach is limited to web browsers only. Multimodal/OCR approaches would be more robust to UI changes and work with visual elements, but require AI models with higher computational cost and potential accuracy issues. The HTML selector approach provides the best balance of simplicity, performance, and reliability for web automation, making it ideal for a Chrome DevTools-like recorder that needs to work across diverse websites with minimal overhead.
+
+**Next Steps:** The implementation could be enhanced with fallback mechanisms for when selectors break, integration with visual regression testing for UI change detection, and support for more complex interaction patterns like drag-and-drop sequences and multi-step workflows.
+

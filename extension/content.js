@@ -1,12 +1,14 @@
-const now = () => Date.now();
-const sendStep = (step) => {
-  try {
-    console.log("Sending step:", step);
-    chrome.runtime.sendMessage({ kind: "STEP_ADD", step });
-  } catch (error) {
-    console.log("Extension context invalidated, skipping step");
-  }
-};
+// Wrap entire content script in try-catch to handle extension context invalidation
+try {
+  const now = () => Date.now();
+  const sendStep = (step) => {
+    try {
+      console.log("Sending step:", step);
+      chrome.runtime.sendMessage({ kind: "STEP_ADD", step });
+    } catch (error) {
+      console.log("Extension context invalidated, skipping step");
+    }
+  };
 
 // Check if recording is active before sending steps
 let isRecording = false;
@@ -452,3 +454,7 @@ try {
   // Start observer
   startObserver();
 })();
+
+} catch (error) {
+  console.log("Extension context invalidated during content script execution:", error);
+}
