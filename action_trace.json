@@ -7,7 +7,7 @@
 
     { "type": "click", "selector": "textarea[aria-label='Message']", "timestamp": 3 },
     { "type": "input", "selector": "textarea[aria-label='Message']", "value": "Hello! What can you do?", "replace": true, "timestamp": 4 },
-    { "type": "click", "selector": "button[data-testid='send-button']", "timestamp": 5 },
+    { "type": "keyPress", "key": "Enter", "timestamp": 5 },
     { "type": "waitForSelector", "selector": "[data-testid='message-wrapper']", "timeout": 30000, "timestamp": 6 },
 
     { "type": "click", "selector": "textarea[aria-label='Message']", "timestamp": 7 },

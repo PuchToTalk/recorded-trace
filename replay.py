@@ -59,10 +59,32 @@ def main():
                     replace = s.get("replace", True)
                     print(f"[{i}] input {sel} -> '{val[:40]}...' (replace={replace})")
                     wait_for(sel)
-                    if replace:
-                        page.fill(sel, val)
+                    
+                    # Check if element is contenteditable
+                    is_contenteditable = page.evaluate(f"""
+                        () => {{
+                            const el = document.querySelector('{sel}');
+                            return el && (el.contentEditable === 'true' || el.isContentEditable);
+                        }}
+                    """)
+                    
+                    if is_contenteditable:
+                        # For contenteditable elements, use innerHTML or textContent
+                        page.evaluate(f"""
+                            (value) => {{
+                                const el = document.querySelector('{sel}');
+                                if (el) {{
+                                    el.textContent = value;
+                                    el.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                                }}
+                            }}
+                        """, val)
                     else:
-                        page.type(sel, val, delay=20)
+                        # Regular input/textarea
+                        if replace:
+                            page.fill(sel, val)
+                        else:
+                            page.type(sel, val, delay=20)
 
                 elif t == "keyPress":
                     key = s["key"]
