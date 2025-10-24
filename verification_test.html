@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extension Verification Test</title>
+    <style>
+        body {
+            height: 3000px;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 40px 0;
+            padding: 20px;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        .test-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .test-button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background-color: #0056b3;
+        }
+        .scroll-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            z-index: 1000;
+        }
+        .draggable {
+            width: 100px;
+            height: 100px;
+            background-color: #28a745;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: move;
+            margin: 20px;
+            border-radius: 5px;
+        }
+        .dropzone {
+            width: 200px;
+            height: 200px;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="scroll-indicator" id="scroll-indicator">
+        Scroll: <span id="scroll-y">0</span>px
+    </div>
+
+    <h1>Extension Verification Test</h1>
+    <p>This page tests all extension functionality. Start recording and perform the tests below.</p>
+
+    <div class="test-section">
+        <h2>1. Scroll Test</h2>
+        <p>Scroll up and down on this page. You should see scroll events in the JSON.</p>
+        <p>Current scroll position: <span id="scroll-position">0</span>px</p>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Keyboard Shortcut Test</h2>
+        <input type="text" id="test-input" class="test-input" placeholder="Type here and try keyboard shortcuts">
+        <p>Test these shortcuts:</p>
+        <ul>
+            <li><strong>Cmd+A</strong> (Select All)</li>
+            <li><strong>Cmd+C</strong> (Copy)</li>
+            <li><strong>Cmd+V</strong> (Paste)</li>
+            <li><strong>Cmd+Z</strong> (Undo)</li>
+            <li><strong>Ctrl+A</strong> (Select All - Windows style)</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Click and Hover Test</h2>
+        <button class="test-button" id="test-button">Click Me</button>
+        <button class="test-button" id="hover-button">Hover Over Me</button>
+        <p>Click and hover over the buttons above.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Double Click Test</h2>
+        <div id="double-click-area" style="padding: 20px; background-color: #e9ecef; border-radius: 4px;">
+            Double-click on this text
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Right Click Test</h2>
+        <div id="right-click-area" style="padding: 20px; background-color: #e9ecef; border-radius: 4px;">
+            Right-click on this text
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>6. Drag and Drop Test</h2>
+        <div class="draggable" draggable="true" id="drag-item">
+            Drag Me
+        </div>
+        <div class="dropzone" id="drop-zone">
+            Drop Zone
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>7. File Upload Test</h2>
+        <input type="file" id="file-input" multiple>
+        <p>Click the file input above to test file upload detection.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>8. Input Test</h2>
+        <input type="text" id="regular-input" class="test-input" placeholder="Regular input">
+        <textarea id="textarea-input" class="test-input" placeholder="Textarea input"></textarea>
+        <div contenteditable="true" id="contenteditable-input" class="test-input" style="min-height: 50px; border: 1px solid #ccc;">
+            Contenteditable input - type here
+        </div>
+    </div>
+
+    <!-- Add more content to make scrolling possible -->
+    <div class="test-section">
+        <h2>9. More Content for Scrolling</h2>
+        <p>This section provides more content to enable scrolling.</p>
+    </div>
+
+    <script>
+        // Update scroll indicator
+        function updateScrollIndicator() {
+            const scrollY = window.scrollY;
+            document.getElementById('scroll-indicator').textContent = `Scroll: ${scrollY}px`;
+            document.getElementById('scroll-position').textContent = scrollY;
+        }
+        
+        window.addEventListener('scroll', updateScrollIndicator);
+        updateScrollIndicator();
+
+        // Drag and drop functionality
+        const dragItem = document.getElementById('drag-item');
+        const dropZone = document.getElementById('drop-zone');
+        
+        dragItem.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', 'dragged item');
+            console.log('Drag started');
+        });
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.backgroundColor = '#e0e0e0';
+        });
+        
+        dropZone.addEventListener('dragleave', (e) => {
+            dropZone.style.backgroundColor = '#f9f9f9';
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.backgroundColor = '#f9f9f9';
+            const data = e.dataTransfer.getData('text/plain');
+            dropZone.textContent = 'Dropped: ' + data;
+            console.log('Dropped:', data);
+        });
+
+        // File input change handler
+        const fileInput = document.getElementById('file-input');
+        fileInput.addEventListener('change', (e) => {
+            console.log('Files selected:', e.target.files.length);
+        });
+
+        // Add more content to make the page scrollable
+        for (let i = 0; i < 20; i++) {
+            const section = document.createElement('div');
+            section.className = 'test-section';
+            section.innerHTML = `
+                <h2>Test Section ${i + 10}</h2>
+                <p>This is test content ${i + 1} to make the page scrollable.</p>
+                <p>Scroll position will be tracked and should appear in the extension JSON.</p>
+            `;
+            document.body.appendChild(section);
+        }
+    </script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 const now = () => Date.now();
 const sendStep = (step) => {
   try {
+    console.log("Sending step:", step);
     chrome.runtime.sendMessage({ kind: "STEP_ADD", step });
   } catch (error) {
     console.log("Extension context invalidated, skipping step");
@@ -16,6 +17,12 @@ try {
     if (msg.kind === "RECORDING_STATE") {
       isRecording = msg.recording;
       console.log("Recording state changed:", isRecording);
+      
+      // If we just started recording, send current navigation
+      if (isRecording) {
+        console.log("Recording started - sending current navigation");
+        sendStep({ type: "navigate", url: location.href, timestamp: now() });
+      }
     }
   });
 } catch (error) {
@@ -43,7 +50,10 @@ try {
     const t = e.target && e.target.closest("*");
     if (!t) return;
     const selector = window.__getUniqueSelector(t);
-    if (selector) sendStep({ type: "click", selector, timestamp: now() });
+    if (selector) {
+      console.log("Click detected on:", selector);
+      sendStep({ type: "click", selector, timestamp: now() });
+    }
   }, { capture: true });
 
   // DOUBLE CLICK
@@ -99,6 +109,8 @@ try {
     const t = e.target;
     if (!t) return;
     
+    console.log("Input event fired on:", t, "contentEditable:", t.contentEditable, "isContentEditable:", t.isContentEditable);
+    
     // Don't record input if Enter was just pressed (within 1 second)
     if (Date.now() - lastEnterTime < 1000) return;
     
@@ -110,14 +122,19 @@ try {
       // Regular input/textarea
       value = t.value;
       selector = window.__getUniqueSelector(t);
+      console.log("Regular input detected:", value);
     } else if (t.contentEditable === "true" || t.isContentEditable || 
                (t.getAttribute && t.getAttribute('contenteditable') === 'true')) {
       // Contenteditable element (like ChatGPT's input)
       value = t.textContent || t.innerText || "";
       selector = window.__getUniqueSelector(t);
+      console.log("Contenteditable input detected:", value, "textContent:", t.textContent, "innerText:", t.innerText);
     }
     
-    if (!selector || !value || value.trim().length === 0) return;
+    if (!selector || !value || value.trim().length === 0) {
+      console.log("Input filtered out - selector:", selector, "value:", value);
+      return;
+    }
     
     console.log("Input detected:", value, "Selector:", selector);
     
@@ -181,6 +198,8 @@ try {
     const t = e.target;
     if (!t) return;
     
+    console.log("Change event detected on:", t, "type:", t.type, "files:", t.files?.length);
+    
     // Check if it's a file input with files selected
     if (t.type === "file" && t.files && t.files.length > 0) {
       const selector = window.__getUniqueSelector(t);
@@ -191,7 +210,7 @@ try {
         lastModified: f.lastModified
       }));
       
-      console.log("File upload detected:", files.length, "files");
+      console.log("File upload detected:", files.length, "files", "selector:", selector);
       sendStep({
         type: "fileUpload",
         selector,
@@ -248,7 +267,7 @@ try {
       if (e.altKey) modifiers.push("Alt");
       if (e.shiftKey) modifiers.push("Shift");
       
-      console.log("Keyboard shortcut detected:", modifiers.join("+"), e.key);
+      console.log("Keyboard shortcut detected:", modifiers.join("+"), e.key, "on element:", e.target);
       sendStep({
         type: "keyboardShortcut",
         key: e.key,
@@ -280,14 +299,17 @@ try {
       const currentX = window.scrollX;
       const currentY = window.scrollY;
       
+      // Only record if there's actual scroll movement
+      if (currentX === lastScrollX && currentY === lastScrollY) return;
+      
       // Determine scroll direction
       let direction = "none";
       if (currentY > lastScrollY) direction = "down";
       else if (currentY < lastScrollY) direction = "up";
-      if (currentX > lastScrollX) direction += "-right";
-      else if (currentX < lastScrollX) direction += "-left";
+      if (currentX > lastScrollX) direction = direction === "none" ? "right" : direction + "-right";
+      else if (currentX < lastScrollX) direction = direction === "none" ? "left" : direction + "-left";
       
-      console.log("Scroll detected:", direction, "to", currentX, currentY);
+      console.log("Scroll detected:", direction, "from", lastScrollX, lastScrollY, "to", currentX, currentY);
       sendStep({
         type: "scroll",
         x: currentX,
@@ -298,7 +320,7 @@ try {
       
       lastScrollX = currentX;
       lastScrollY = currentY;
-    }, 200);
+    }, 100);
   }, { passive: true });
 
   // DRAG AND DROP ACTIONS
@@ -311,7 +333,7 @@ try {
     dragStartElement = e.target;
     dragStartTime = now();
     dragStartPosition = { x: e.clientX, y: e.clientY };
-    console.log("Drag started on:", e.target);
+    console.log("Drag started on:", e.target, "draggable:", e.target.draggable);
   }, true);
 
   document.addEventListener("dragover", (e) => {
@@ -329,6 +351,8 @@ try {
     const sourceSelector = window.__getUniqueSelector(dragStartElement);
     const targetSelector = window.__getUniqueSelector(dragEndElement);
     
+    console.log("Drop detected on:", dragEndElement, "from:", dragStartElement);
+    
     if (sourceSelector && targetSelector) {
       console.log("Drag and drop detected:", sourceSelector, "->", targetSelector);
       sendStep({
@@ -340,6 +364,8 @@ try {
         endPosition: dragEndPosition,
         timestamp: now()
       });
+    } else {
+      console.log("Drag and drop failed - missing selectors:", { sourceSelector, targetSelector });
     }
     
     dragStartElement = null;
