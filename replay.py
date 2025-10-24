@@ -93,7 +93,8 @@ def main():
 
                 elif t == "scroll":
                     x, y = s.get("x", 0), s.get("y", 0)
-                    print(f"[{i}] scroll to {x},{y}")
+                    direction = s.get("direction", "none")
+                    print(f"[{i}] scroll to {x},{y} (direction: {direction})")
                     page.evaluate("(x,y)=>window.scrollTo(x,y)", x, y)
 
                 elif t == "hover":
@@ -104,9 +105,51 @@ def main():
 
                 elif t == "dragAndDrop":
                     src, dst = s["source"], s["target"]
-                    print(f"[{i}] dragAndDrop {src} -> {dst}")
+                    duration = s.get("duration", 0)
+                    print(f"[{i}] dragAndDrop {src} -> {dst} (duration: {duration}ms)")
                     wait_for(src); wait_for(dst)
                     page.drag_and_drop(src, dst)
+
+                elif t == "doubleClick":
+                    sel = s["selector"]
+                    print(f"[{i}] doubleClick {sel}")
+                    wait_for(sel)
+                    page.dblclick(sel)
+
+                elif t == "rightClick":
+                    sel = s["selector"]
+                    print(f"[{i}] rightClick {sel}")
+                    wait_for(sel)
+                    page.click(sel, button="right")
+
+                elif t == "keyboardShortcut":
+                    key = s["key"]
+                    modifiers = s.get("modifiers", [])
+                    print(f"[{i}] keyboardShortcut {modifiers}+{key}")
+                    
+                    # Press modifiers first
+                    for mod in modifiers:
+                        page.keyboard.down(mod.lower())
+                    
+                    # Press the key
+                    page.keyboard.press(key)
+                    
+                    # Release modifiers
+                    for mod in modifiers:
+                        page.keyboard.up(mod.lower())
+
+                elif t == "fileUpload":
+                    sel = s["selector"]
+                    files = s.get("files", [])
+                    file_count = s.get("fileCount", 0)
+                    print(f"[{i}] fileUpload {sel} -> {file_count} files")
+                    wait_for(sel)
+                    
+                    # For file upload, we need to provide file paths
+                    # This is a simplified version - in practice, you'd need actual file paths
+                    if files:
+                        file_paths = [f["name"] for f in files]  # Use file names as paths
+                        page.set_input_files(sel, file_paths)
 
                 else:
                     print(f"[{i}] warn: unsupported type '{t}', skipping")

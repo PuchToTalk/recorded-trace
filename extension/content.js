@@ -46,6 +46,48 @@ try {
     if (selector) sendStep({ type: "click", selector, timestamp: now() });
   }, { capture: true });
 
+  // DOUBLE CLICK
+  document.addEventListener("dblclick", (e) => {
+    if (!isRecording) return;
+    const t = e.target && e.target.closest("*");
+    if (!t) return;
+    const selector = window.__getUniqueSelector(t);
+    if (selector) {
+      console.log("Double click detected on:", selector);
+      sendStep({ type: "doubleClick", selector, timestamp: now() });
+    }
+  }, { capture: true });
+
+  // RIGHT CLICK (CONTEXT MENU)
+  document.addEventListener("contextmenu", (e) => {
+    if (!isRecording) return;
+    const t = e.target && e.target.closest("*");
+    if (!t) return;
+    const selector = window.__getUniqueSelector(t);
+    if (selector) {
+      console.log("Right click detected on:", selector);
+      sendStep({ type: "rightClick", selector, timestamp: now() });
+    }
+  }, { capture: true });
+
+  // HOVER ACTIONS
+  let hoverTimeout;
+  document.addEventListener("mouseover", (e) => {
+    if (!isRecording) return;
+    const t = e.target && e.target.closest("*");
+    if (!t) return;
+    
+    // Debounce hover events to avoid too many recordings
+    clearTimeout(hoverTimeout);
+    hoverTimeout = setTimeout(() => {
+      const selector = window.__getUniqueSelector(t);
+      if (selector) {
+        console.log("Hover detected on:", selector);
+        sendStep({ type: "hover", selector, timestamp: now() });
+      }
+    }, 300);
+  }, { capture: true });
+
   // INPUT / CHANGE - capture complete input values with improved debouncing
   let inputTimeout;
   let lastEnterTime = 0;
@@ -133,7 +175,34 @@ try {
     }
   }, true);
 
-  // KEYDOWN - only capture special keys, not regular typing
+  // FILE UPLOAD DETECTION
+  document.addEventListener("change", (e) => {
+    if (!isRecording) return;
+    const t = e.target;
+    if (!t) return;
+    
+    // Check if it's a file input with files selected
+    if (t.type === "file" && t.files && t.files.length > 0) {
+      const selector = window.__getUniqueSelector(t);
+      const files = Array.from(t.files).map(f => ({
+        name: f.name,
+        size: f.size,
+        type: f.type,
+        lastModified: f.lastModified
+      }));
+      
+      console.log("File upload detected:", files.length, "files");
+      sendStep({
+        type: "fileUpload",
+        selector,
+        files,
+        fileCount: files.length,
+        timestamp: now()
+      });
+    }
+  }, true);
+
+  // KEYDOWN - capture special keys and keyboard shortcuts
   document.addEventListener("keydown", (e) => {
     if (!isRecording) return;
     
@@ -171,6 +240,23 @@ try {
       clearTimeout(inputTimeout);
     }
     
+    // Capture keyboard shortcuts (Ctrl, Cmd, Alt combinations)
+    if (e.ctrlKey || e.metaKey || e.altKey) {
+      const modifiers = [];
+      if (e.ctrlKey) modifiers.push("Control");
+      if (e.metaKey) modifiers.push("Meta");
+      if (e.altKey) modifiers.push("Alt");
+      if (e.shiftKey) modifiers.push("Shift");
+      
+      console.log("Keyboard shortcut detected:", modifiers.join("+"), e.key);
+      sendStep({
+        type: "keyboardShortcut",
+        key: e.key,
+        modifiers,
+        timestamp: now()
+      });
+    }
+    
     // Only capture special keys, not regular typing (which is handled by input events)
     if (e.key === "Enter" || e.key === "Tab" || e.key === "Escape" || e.key === "Backspace" || e.key === "Delete") {
       sendStep({ type: "keyPress", key: e.key, timestamp: now() });
@@ -182,15 +268,87 @@ try {
   //   // Keyup handler removed to prevent duplicate input recordings
   // }, true);
 
-  // SCROLL (throttled)
+  // ADVANCED SCROLL (throttled with direction detection)
   let scrollTimer;
+  let lastScrollY = 0;
+  let lastScrollX = 0;
+  
   window.addEventListener("scroll", () => {
     if (!isRecording) return;
     clearTimeout(scrollTimer);
     scrollTimer = setTimeout(() => {
-      sendStep({ type: "scroll", x: window.scrollX, y: window.scrollY, timestamp: now() });
+      const currentX = window.scrollX;
+      const currentY = window.scrollY;
+      
+      // Determine scroll direction
+      let direction = "none";
+      if (currentY > lastScrollY) direction = "down";
+      else if (currentY < lastScrollY) direction = "up";
+      if (currentX > lastScrollX) direction += "-right";
+      else if (currentX < lastScrollX) direction += "-left";
+      
+      console.log("Scroll detected:", direction, "to", currentX, currentY);
+      sendStep({
+        type: "scroll",
+        x: currentX,
+        y: currentY,
+        direction: direction,
+        timestamp: now()
+      });
+      
+      lastScrollX = currentX;
+      lastScrollY = currentY;
     }, 200);
   }, { passive: true });
+
+  // DRAG AND DROP ACTIONS
+  let dragStartElement = null;
+  let dragStartTime = 0;
+  let dragStartPosition = { x: 0, y: 0 };
+
+  document.addEventListener("dragstart", (e) => {
+    if (!isRecording) return;
+    dragStartElement = e.target;
+    dragStartTime = now();
+    dragStartPosition = { x: e.clientX, y: e.clientY };
+    console.log("Drag started on:", e.target);
+  }, true);
+
+  document.addEventListener("dragover", (e) => {
+    if (!isRecording) return;
+    e.preventDefault(); // Allow drop
+  }, true);
+
+  document.addEventListener("drop", (e) => {
+    if (!isRecording || !dragStartElement) return;
+    
+    const dragEndElement = e.target;
+    const dragDuration = now() - dragStartTime;
+    const dragEndPosition = { x: e.clientX, y: e.clientY };
+    
+    const sourceSelector = window.__getUniqueSelector(dragStartElement);
+    const targetSelector = window.__getUniqueSelector(dragEndElement);
+    
+    if (sourceSelector && targetSelector) {
+      console.log("Drag and drop detected:", sourceSelector, "->", targetSelector);
+      sendStep({
+        type: "dragAndDrop",
+        source: sourceSelector,
+        target: targetSelector,
+        duration: dragDuration,
+        startPosition: dragStartPosition,
+        endPosition: dragEndPosition,
+        timestamp: now()
+      });
+    }
+    
+    dragStartElement = null;
+  }, true);
+
+  document.addEventListener("dragend", (e) => {
+    if (!isRecording) return;
+    dragStartElement = null;
+  }, true);
 
   // Use MutationObserver to catch text changes in contenteditable elements
   let observer;

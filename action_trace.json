@@ -10,15 +10,20 @@
     { "type": "keyPress", "key": "Enter", "timestamp": 5 },
     { "type": "waitForSelector", "selector": "[data-testid='message-wrapper']", "timeout": 30000, "timestamp": 6 },
 
-    { "type": "click", "selector": "p[data-placeholder='Ask anything']", "timestamp": 7 },
-    { "type": "input", "selector": "#prompt-textarea", "value": "Write a short haiku about coffee.", "replace": true, "timestamp": 8 },
-    { "type": "keyPress", "key": "Enter", "timestamp": 9 },
-    { "type": "waitForSelector", "selector": "[data-testid='message-wrapper']", "timeout": 30000, "timestamp": 10 },
+    { "type": "hover", "selector": "button[data-testid='send-button']", "timestamp": 7 },
+    { "type": "click", "selector": "p[data-placeholder='Ask anything']", "timestamp": 8 },
+    { "type": "input", "selector": "#prompt-textarea", "value": "Write a short haiku about coffee.", "replace": true, "timestamp": 9 },
+    { "type": "keyboardShortcut", "key": "Enter", "modifiers": ["Control"], "timestamp": 10 },
+    { "type": "waitForSelector", "selector": "[data-testid='message-wrapper']", "timeout": 30000, "timestamp": 11 },
 
-    { "type": "click", "selector": "[aria-label='Search']", "timestamp": 11 },
-    { "type": "input", "selector": "input[placeholder*='Search']", "value": "best cafés near the Panthéon", "replace": true, "timestamp": 12 },
-    { "type": "keyPress", "key": "Enter", "timestamp": 13 },
-    { "type": "wait", "ms": 1000, "timestamp": 14 },
-    { "type": "scroll", "x": 0, "y": 600, "timestamp": 15 }
+    { "type": "doubleClick", "selector": "div.message-content", "timestamp": 12 },
+    { "type": "rightClick", "selector": "div.message-content", "timestamp": 13 },
+    { "type": "scroll", "x": 0, "y": 600, "direction": "down", "timestamp": 14 },
+    { "type": "scroll", "x": 0, "y": 300, "direction": "up", "timestamp": 15 },
+
+    { "type": "click", "selector": "[aria-label='Search']", "timestamp": 16 },
+    { "type": "input", "selector": "input[placeholder*='Search']", "value": "best cafés near the Panthéon", "replace": true, "timestamp": 17 },
+    { "type": "keyPress", "key": "Enter", "timestamp": 18 },
+    { "type": "wait", "ms": 1000, "timestamp": 19 }
   ]
 }
