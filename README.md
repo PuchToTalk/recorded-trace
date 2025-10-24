@@ -1,5 +1,7 @@
 # Altera Chrome DevTools-like Recorder
 
+![Demo](public/demo.gif)
+
 This repository implements a minimal Chrome DevTools Recorder clone:
 
 1) **Chrome Extension** to record user actions and download a JSON trace.  
