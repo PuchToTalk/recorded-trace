@@ -14,7 +14,7 @@ chrome.storage.local.get(["recording", "buffer"]).then(({ recording: storedRecor
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.kind === "STEP_ADD" && recording) {
     buffer.steps.push(msg.step);
-    console.log("Step added:", msg.step, "Total steps:", buffer.steps.length);
+    console.log("Step added:", msg.step.type, msg.step.selector || msg.step.url || msg.step.key, "Total steps:", buffer.steps.length);
   }
 
   if (msg.kind === "GET_RECORDING_STATE") {

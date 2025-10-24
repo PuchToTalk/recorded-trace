@@ -5,13 +5,13 @@
     { "type": "navigate", "url": "https://chatgpt.com", "timestamp": 1 },
     { "type": "wait", "ms": 1500, "timestamp": 2 },
 
-    { "type": "click", "selector": "textarea[aria-label='Message']", "timestamp": 3 },
-    { "type": "input", "selector": "textarea[aria-label='Message']", "value": "Hello! What can you do?", "replace": true, "timestamp": 4 },
+    { "type": "click", "selector": "p[data-placeholder='Ask anything']", "timestamp": 3 },
+    { "type": "input", "selector": "#prompt-textarea", "value": "Hello! What can you do?", "replace": true, "timestamp": 4 },
     { "type": "keyPress", "key": "Enter", "timestamp": 5 },
     { "type": "waitForSelector", "selector": "[data-testid='message-wrapper']", "timeout": 30000, "timestamp": 6 },
 
-    { "type": "click", "selector": "textarea[aria-label='Message']", "timestamp": 7 },
-    { "type": "input", "selector": "textarea[aria-label='Message']", "value": "Write a short haiku about coffee.", "replace": true, "timestamp": 8 },
+    { "type": "click", "selector": "p[data-placeholder='Ask anything']", "timestamp": 7 },
+    { "type": "input", "selector": "#prompt-textarea", "value": "Write a short haiku about coffee.", "replace": true, "timestamp": 8 },
     { "type": "keyPress", "key": "Enter", "timestamp": 9 },
     { "type": "waitForSelector", "selector": "[data-testid='message-wrapper']", "timeout": 30000, "timestamp": 10 },
 
